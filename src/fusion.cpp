@@ -6,11 +6,13 @@
 Fusion::Fusion(const std::shared_ptr<Workspace> &workspace)
     : workspace(workspace)
 {
-
+    // nothing to do
 }
 
 void Fusion::run(bool geometric, AbstractProgress *progress)
 {
+    max_reprojection_error_sq = options.max_reprojection_error * options.max_reprojection_error;
+
     initializeViews(geometric);
 
     progress->configure(views.size());
@@ -60,30 +62,26 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
     std::shared_ptr<SrcView> &ref = views[ref_item.image_id];
     if (!ref || !ref->isValid(ref_item.x)) return;
 
+    Vector2 x = convertToFloat(ref_item.x);
     const Vector3 X_ref = ref->unproject(ref_item.x);
     const Normal  n_ref = ref->unprojectNormal(ref_item.x);
     const auto &c_ref = ref->color(ref_item.x);
 
-    std::vector<unsigned char> accumulated_r, accumulated_g, accumulated_b;
-    std::vector<FloatT> accumulated_x,  accumulated_y,  accumulated_z;
-    std::vector<FloatT>  accumulated_nx, accumulated_ny, accumulated_nz;
-
-
-    std::set<std::pair<int, std::pair<int, int>>> used;
-    used.insert(std::make_pair(ref_item.image_id, std::make_pair(ref_item.x(0), ref_item.x(1))));
+//    std::set<std::pair<int, std::pair<int, int>>> used;
+//    used.insert(std::make_pair(ref_item.image_id, std::make_pair(ref_item.x(0), ref_item.x(1))));
 
     std::queue<QueueItem> queue;
     pupulateQueue(queue, ref_item, X_ref);
 
-    accumulated_r.push_back(c_ref.r());
-    accumulated_g.push_back(c_ref.g());
-    accumulated_b.push_back(c_ref.b());
-    accumulated_x.push_back(X_ref.x());
-    accumulated_y.push_back(X_ref.y());
-    accumulated_z.push_back(X_ref.z());
-    accumulated_nx.push_back(n_ref.x());
-    accumulated_ny.push_back(n_ref.y());
-    accumulated_nz.push_back(n_ref.z());
+    accumulated_r.clear();  accumulated_r.push_back(c_ref.r());
+    accumulated_g.clear();  accumulated_g.push_back(c_ref.g());
+    accumulated_b.clear();  accumulated_b.push_back(c_ref.b());
+    accumulated_x.clear();  accumulated_x.push_back(X_ref.x());
+    accumulated_y.clear();  accumulated_y.push_back(X_ref.y());
+    accumulated_z.clear();  accumulated_z.push_back(X_ref.z());
+    accumulated_nx.clear(); accumulated_nx.push_back(n_ref.x());
+    accumulated_ny.clear(); accumulated_ny.push_back(n_ref.y());
+    accumulated_nz.clear(); accumulated_nz.push_back(n_ref.z());
 
     while(!queue.empty())
     {
@@ -92,8 +90,8 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
         std::shared_ptr<SrcView> &src = views[src_item.image_id];
         if (!src) continue;
 
-        if (!used.insert(std::make_pair(src_item.image_id, std::make_pair(src_item.x(0), src_item.x(1)))).second)
-            continue;
+//        if (!used.insert(std::make_pair(src_item.image_id, std::make_pair(src_item.x(0), src_item.x(1)))).second)
+//            continue;
 
         if (!src->isValid(src_item.x))
             continue;
@@ -108,7 +106,7 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
 
         const Vector3 X_src = src->unproject(src_item.x);
 
-        if (!checkReprojectionError(convertToFloat(ref_item.x), ref->project(X_src)))
+        if (!checkReprojectionError(x, ref->project(X_src)))
             continue;
 
         const auto &c_src = src->color(src_item.x);
@@ -149,8 +147,6 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
     Normal n; n << accumulated_nx[idx], accumulated_ny[idx], accumulated_nz[idx];
     openMVG::image::RGBColor c; c << accumulated_r[idx], accumulated_g[idx], accumulated_b[idx];
 
-    if (n.norm() < std::numeric_limits<FloatT>::epsilon())
-        return;
     n.normalize();
 
     colors.push_back(c);
@@ -187,5 +183,5 @@ bool Fusion::checkNormal(const Normal &ref_normal, const Normal &src_normal) con
 
 bool Fusion::checkReprojectionError(const Vector2 &ref_x, const Vector2 &ref_x_) const
 {
-    return (ref_x - ref_x_).norm() < options.max_reprojection_error;
+    return (ref_x - ref_x_).squaredNorm() < max_reprojection_error_sq;
 }

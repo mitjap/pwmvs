@@ -34,9 +34,9 @@ class Fusion
 public:
     struct Options
     {
-        FloatT max_depth_error = 0.01;
-        FloatT max_angle_error = deg2rad(10);
-        FloatT max_reprojection_error = 2;
+        FloatT max_depth_error = 0.02;
+        FloatT max_angle_error = deg2rad(15);
+        FloatT max_reprojection_error = 1.5;
 
         int min_points = 5;
     };
@@ -61,6 +61,12 @@ public:
     std::vector<openMVG::image::RGBColor> colors;
     std::vector<Vector3> points;
     std::vector<Normal> normals;
+
+    FloatT max_reprojection_error_sq;
+
+    std::vector<unsigned char> accumulated_r, accumulated_g, accumulated_b;
+    std::vector<FloatT> accumulated_x,  accumulated_y,  accumulated_z;
+    std::vector<FloatT>  accumulated_nx, accumulated_ny, accumulated_nz;
 
 private:
     std::vector<std::shared_ptr<SrcView>> views;
