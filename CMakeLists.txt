@@ -3,6 +3,7 @@ project(pwmvs VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(OpenMVG REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(OpenMP REQUIRED)
 
 add_library(pwmvs
     src/fusion.cpp
@@ -27,6 +28,8 @@ target_link_libraries(pwmvs
         OpenMVG::openMVG_image
         OpenMVG::openMVG_features
         Eigen3::Eigen
+    PRIVATE
+        OpenMP::OpenMP_CXX
 )
 target_compile_features(pwmvs
     PUBLIC
