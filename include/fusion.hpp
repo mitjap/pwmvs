@@ -42,7 +42,6 @@ public:
     };
 
     Fusion(const std::shared_ptr<Workspace> &workspace);
-    virtual ~Fusion();
 
     void run(bool geometric, AbstractProgress *progress = nullptr);
 
@@ -64,5 +63,5 @@ public:
     std::vector<Normal> normals;
 
 private:
-    std::vector<SrcView *> views;
+    std::vector<std::shared_ptr<SrcView>> views;
 };

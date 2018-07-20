@@ -61,20 +61,18 @@ bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
             std::cout << " " << src_view_id;
         std::cout << std::endl;
 
-        RefView *ref = createRefView(ref_view);
+        std::shared_ptr<RefView> ref = createRefView(ref_view);
         if (!loadFromFiles(*workspace, ref_id, false, true, false, geometric, geometric, *ref)) {
-            delete ref;
             continue;
         }
 
-        std::vector<SrcView *> srcs;
+        std::vector<std::shared_ptr<SrcView>> srcs;
         for (int src_id : src_view_ids)
         {
             const ViewData &src_view = workspace->view_data[src_id];
 
-            SrcView *src = createSrcView(ref_view, src_view);
+            std::shared_ptr<SrcView> src = createSrcView(ref_view, src_view);
             if (!loadFromFiles(*workspace, src_id, false, true, false, geometric, geometric, *src)) {
-                delete src;
                 continue;
             }
 
@@ -95,10 +93,6 @@ bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
             saveToFiles(*workspace, ref_id, true, true, geometric, *ref);
             //debugToFiles(workspace, ref_id, true, true, geometric, *ref, min_depth, max_depth);
         }
-
-        for (SrcView *src : srcs)
-            delete src;
-        delete ref;
     }
 
     return true;

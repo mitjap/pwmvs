@@ -122,7 +122,7 @@ private:
     };
 
 public:
-    PWMVS(RefView *ref, const std::vector<SrcView *> &srcs, const Options &options);
+    PWMVS(std::shared_ptr<RefView> &ref, const std::vector<std::shared_ptr<SrcView>> &srcs, const Options &options);
 
     void run();
 protected:
@@ -153,7 +153,7 @@ protected:
         // sample and accumulate evaluations per hypothesis
         for (int i = 0; i < options.monte_carlo_samples; i++) {
             int src_id = sampler(urng);
-            const SrcView *src = srcs[src_id];
+            const std::shared_ptr<SrcView> &src = srcs[src_id];
 
             evaluations[0] += color_similarities[src_id](x);
             for (int h = 1; h < N; ++h)
@@ -200,8 +200,8 @@ protected:
 private:
     const Options options;
 
-    RefView * const ref;
-    const std::vector<SrcView *> srcs;
+    const std::shared_ptr<RefView> ref;
+    const std::vector<std::shared_ptr<SrcView>> srcs;
 
     std::vector<Image<FloatT>> color_similarities; // NCC
 

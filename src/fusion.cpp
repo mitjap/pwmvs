@@ -3,21 +3,10 @@
 #include "view_utils.hpp"
 #include "progress.hpp"
 
-#include <queue>
-
-
 Fusion::Fusion(const std::shared_ptr<Workspace> &workspace)
     : workspace(workspace)
 {
 
-}
-
-Fusion::~Fusion()
-{
-    for (View * view : views)
-    {
-        delete view;
-    }
 }
 
 void Fusion::run(bool geometric, AbstractProgress *progress)
@@ -57,12 +46,9 @@ void Fusion::initializeViews(bool geometric)
     int view_id = 0;
     for (const ViewData &view_data : workspace->view_data)
     {
-        SrcView *src = createSrcView(view_data);
+        std::shared_ptr<SrcView> src = createSrcView(view_data);
         if (!loadFromFiles(*workspace, view_id, geometric, false, true, true, true, *src))
-        {
-            delete src;
-            src = nullptr;
-        }
+            src.reset();
 
         views.push_back(src);
         view_id++;
@@ -71,21 +57,17 @@ void Fusion::initializeViews(bool geometric)
 
 void Fusion::fuse(const Fusion::QueueItem &ref_item)
 {
-    SrcView *ref_ptr = views[ref_item.image_id];
-    if (ref_ptr == nullptr)
-        return;
+    std::shared_ptr<SrcView> &ref = views[ref_item.image_id];
+    if (!ref || !ref->isValid(ref_item.x)) return;
 
-    SrcView &ref = *ref_ptr;
-    if (!ref.isValid(ref_item.x))
-        return;
+    const Vector3 X_ref = ref->unproject(ref_item.x);
+    const Normal  n_ref = ref->unprojectNormal(ref_item.x);
+    const auto &c_ref = ref->color(ref_item.x);
 
     std::vector<unsigned char> accumulated_r, accumulated_g, accumulated_b;
     std::vector<FloatT> accumulated_x,  accumulated_y,  accumulated_z;
     std::vector<FloatT>  accumulated_nx, accumulated_ny, accumulated_nz;
 
-    const Vector3 X_ref = ref.unproject(ref_item.x);
-    const Normal  n_ref = ref.unprojectNormal(ref_item.x);
-    const auto &c_ref = ref.color(ref_item.x);
 
     std::set<std::pair<int, std::pair<int, int>>> used;
     used.insert(std::make_pair(ref_item.image_id, std::make_pair(ref_item.x(0), ref_item.x(1))));
@@ -107,32 +89,29 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
     {
         const Fusion::QueueItem src_item = queue.front(); queue.pop();
 
-        SrcView *src_ptr = views[src_item.image_id];
-        if (src_ptr == nullptr)
-            continue;
-
-        SrcView &src = *src_ptr;
+        std::shared_ptr<SrcView> &src = views[src_item.image_id];
+        if (!src) continue;
 
         if (!used.insert(std::make_pair(src_item.image_id, std::make_pair(src_item.x(0), src_item.x(1)))).second)
             continue;
 
-        if (!src.isValid(src_item.x))
+        if (!src->isValid(src_item.x))
             continue;
 
-        if (!checkDepth(src.distance(X_ref), src.depth(src_item.x)))
+        if (!checkDepth(src->distance(X_ref), src->depth(src_item.x)))
             continue;
 
-        const Normal n_src = src.unprojectNormal(src_item.x);
+        const Normal n_src = src->unprojectNormal(src_item.x);
 
         if (!checkNormal(n_ref, n_src))
             continue;
 
-        const Vector3 X_src = src.unproject(src_item.x);
+        const Vector3 X_src = src->unproject(src_item.x);
 
-        if (!checkReprojectionError(convertToFloat(ref_item.x), ref.project(X_src)))
+        if (!checkReprojectionError(convertToFloat(ref_item.x), ref->project(X_src)))
             continue;
 
-        const auto &c_src = src.color(src_item.x);
+        const auto &c_src = src->color(src_item.x);
 
         accumulated_r.push_back(c_src.r());
         accumulated_g.push_back(c_src.g());
@@ -147,8 +126,8 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
         pupulateQueue(queue, src_item, X_src);
 
         // Invalidate pixel
-        src.depth(src_item.x)  = 0;
-        src.normal(src_item.x) = Normal::Zero();
+        src->depth(src_item.x)  = 0;
+        src->normal(src_item.x) = Normal::Zero();
     }
 
     if (accumulated_x.size() < options.min_points)

@@ -8,12 +8,12 @@
 #include "openMVG/image/image_io.hpp"
 #include "image_io.hpp"
 
-void DebugMinMaxDepth(RefView *ref)
+void DebugMinMaxDepth(const std::shared_ptr<RefView> &ref)
 {
     std::cout << "ref.depth.min: " << ref->depth.minCoeff() << " max: " << ref->depth.maxCoeff() << std::endl;
 }
 
-PWMVS::PWMVS(RefView *ref, const std::vector<SrcView *> &srcs, const PWMVS::Options &options)
+PWMVS::PWMVS(std::shared_ptr<RefView> &ref, const std::vector<std::shared_ptr<SrcView> > &srcs, const PWMVS::Options &options)
     : ref(ref)
     , srcs(srcs)
     , options(options)

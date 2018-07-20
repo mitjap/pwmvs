@@ -7,18 +7,18 @@
 #include <stlplus3/filesystemSimplified/file_system.hpp>
 
 
-static RefView *createRefView(const ViewData &ref_view)
+static std::shared_ptr<RefView> createRefView(const ViewData &ref_view)
 {
-    RefView *ref = new RefView(ref_view.width, ref_view.height);
+    std::shared_ptr<RefView> ref = std::make_shared<RefView>(ref_view.width, ref_view.height);
     ref->K = ref_view.K;
     ref->K_inv = ref_view.K.inverse();
 
     return ref;
 }
 
-static SrcView *createSrcView(const ViewData &src_view)
+static std::shared_ptr<SrcView> createSrcView(const ViewData &src_view)
 {
-    SrcView *src = new SrcView(src_view.width, src_view.height);
+    std::shared_ptr<SrcView> src = std::make_shared<SrcView>(src_view.width, src_view.height);
 
     src->K = src_view.K;
     src->K_inv = src_view.K.inverse();
@@ -31,9 +31,9 @@ static SrcView *createSrcView(const ViewData &src_view)
     return src;
 }
 
-static SrcView *createSrcView(const ViewData &ref_view, const ViewData &src_view)
+static std::shared_ptr<SrcView> createSrcView(const ViewData &ref_view, const ViewData &src_view)
 {
-    SrcView *src = createSrcView(src_view);
+    std::shared_ptr<SrcView> src = createSrcView(src_view);
 
     // Relative pose
     src->R = src_view.R * ref_view.R.transpose();
