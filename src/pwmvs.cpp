@@ -37,7 +37,7 @@ PWMVS::PWMVS(std::shared_ptr<RefView> &ref, const std::vector<std::shared_ptr<Sr
     //DebugNormal(ref, std::string("normal_random") + std::string(".jpeg"));
 }
 
-void PWMVS::run()
+bool PWMVS::run()
 {
     computeInitialColorSimilarities();
 
@@ -80,6 +80,8 @@ void PWMVS::run()
     {
         std::cout << "hypothesis: " << iter.first << " -> " << iter.second << std::endl;
     }
+
+    return true;
 }
 
 void PWMVS::sweep(const FloatT perturbation, const FloatT state_transition_probability, const PWMVS::Direction &dir)

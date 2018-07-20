@@ -124,7 +124,7 @@ private:
 public:
     PWMVS(std::shared_ptr<RefView> &ref, const std::vector<std::shared_ptr<SrcView>> &srcs, const Options &options);
 
-    void run();
+    bool run();
 protected:
 
     void sweep(const FloatT perturbation, const FloatT state_transition_probability, const Direction &dir);

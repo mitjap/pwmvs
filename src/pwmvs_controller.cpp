@@ -12,7 +12,7 @@ Controller<T>::Controller(const std::shared_ptr<Workspace> &workspace, const typ
     : workspace(workspace)
     , pwmvs_options(pwmvs_options)
 {
-
+    // nothing to do
 }
 
 template <class T>
@@ -35,7 +35,6 @@ bool Controller<T>::run(bool geometric, AbstractProgress *progress)
 
     return true;
 }
-
 
 template <class T>
 bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
@@ -88,7 +87,8 @@ bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
             options.filter_geometric_consistency &= geometric;
             options.filter_min_num_consistent = std::min(options.filter_min_num_consistent, static_cast<decltype(options.filter_min_num_consistent)>(srcs.size()));
             T pwmvs(ref, srcs, options);
-            pwmvs.run();
+            if (!pwmvs.run())
+                return false;
 
             saveToFiles(*workspace, ref_id, true, true, geometric, *ref);
             //debugToFiles(workspace, ref_id, true, true, geometric, *ref, min_depth, max_depth);
