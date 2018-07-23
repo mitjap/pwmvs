@@ -9,7 +9,7 @@ template <class T>
 class Controller
 {
 public:
-    Controller(const std::shared_ptr<Workspace> &workspace, const typename T::Options &options = T::Options());
+    Controller(const std::shared_ptr<Workspace> &workspace, const typename T::Options &options = typename T::Options());
     bool run(bool geometric, AbstractProgress *progress = nullptr);
 
 private:
