@@ -4,7 +4,7 @@
 
 static FloatT cosAngleBetweenNormals(const Normal &a, const Normal &b)
 {
-    const FloatT cons_angle = a.dot(b);
+    const FloatT cos_angle = a.dot(b);
     return std::min(std::max(cos_angle, static_cast<FloatT>(-1.0)), static_cast<FloatT>(+1.0));
 }
 
