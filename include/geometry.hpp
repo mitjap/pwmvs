@@ -2,21 +2,6 @@
 
 #include "types.hpp"
 
-template <class Derived>
-static void median(Eigen::EigenBase<Derived> &X, int max_iter = 10)
-{
-    typedef typename Derived::Scalar Scalar;
-    typedef typename Eigen::internal::plain_col_type<Derived>::type VectorType;
-
-    VectorType y = X.derived().array().rowwise().sum() / X.rows();
-
-    while (true)
-    {
-        VectorType dist = (X.colwise() - y).colwise().norm();
-    }
-}
-
-
 static FloatT cosAngleBetweenNormals(const Normal &a, const Normal &b)
 {
     return a.dot(b);
