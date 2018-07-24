@@ -216,7 +216,7 @@ private:
     RandomDepthGenerator rdg;
     RandomNormalGenerator rng;
 
-    PhotometricConsistencyOptimized photometric_consistency_calculator;
+    PhotometricConsistencyOptimized<> photometric_consistency_calculator;
     GeometricConsistency geometric_consistency_calculator;
     MessageCalculator message_calculator;
 

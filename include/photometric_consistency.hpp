@@ -211,7 +211,7 @@ private:
     const RefView &ref;
 };
 
-
+template <class Sampler = openMVG::image::SamplerLinear>
 struct PhotometricConsistencyOptimized
 {
     PhotometricConsistencyOptimized(const RefView &ref, const int window_size, const FloatT color_dispersion, FloatT spatial_dispersion)
@@ -263,7 +263,7 @@ public:
                 const Vector2 x_src = src.project((d / ray.dot(normal)) * ray);
 
                 const FloatT ref_color = Sample(ref.image, (x + x_).eval());
-                const FloatT src_color = SampleLinear(src.image, x_src, false);
+                const FloatT src_color = Sample(src.image, x_src, false);
 
                 const FloatT w = weight(window_row, window_col, center_color - ref_color);
 
@@ -328,22 +328,7 @@ private:
         return std::exp(- (color_diff * color_diff) * color_dispersion - (row_diff * row_diff + col_diff * col_diff) * spatial_dispersion);
     }
 
-
-    FloatT SampleCubic(const Image<FloatT> &image, const Vector2 &x, bool clamp_to_edge) const
-    {
-        if (clamp_to_edge && !image.Contains(x))
-        {
-            Vector2i x_;
-            x_(0) = std::min(image.Width() - 1, std::max(0, static_cast<int>(x(0))));
-            x_(1) = std::min(image.Height() - 1, std::max(0, static_cast<int>(x(1))));
-
-            return Sample(image, x_);
-        }
-
-        return sampler_cubic(image, convertToOpenMVG(x.y()), convertToOpenMVG(x.x()));
-    }
-
-    FloatT SampleLinear(const Image<FloatT> &image, const Vector2 &x, bool clamp_to_edge) const
+    FloatT Sample(const Image<FloatT> &image, const Vector2 &x, bool clamp_to_edge) const
     {
         if (clamp_to_edge && !image.Contains(x))
         {
@@ -354,7 +339,7 @@ private:
             return Sample(image, x_);
         }
 
-        return sampler_linear(image, convertToOpenMVG(x.y()), convertToOpenMVG(x.x()));
+        return sampler(image, convertToOpenMVG(x.y()), convertToOpenMVG(x.x()));
     }
 
     FloatT Sample(const Image<FloatT> &image, const Vector2i &x) const
@@ -375,6 +360,5 @@ private:
     Image<FloatT> ref_weighted_color_sum;
     Image<FloatT> ref_weighted_color_sum_sq;
 
-    openMVG::image::Sampler2d<openMVG::image::SamplerCubic> sampler_cubic;
-    openMVG::image::Sampler2d<openMVG::image::SamplerLinear> sampler_linear;
+    openMVG::image::Sampler2d<Sampler> sampler;
 };
