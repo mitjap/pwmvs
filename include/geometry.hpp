@@ -4,7 +4,8 @@
 
 static FloatT cosAngleBetweenNormals(const Normal &a, const Normal &b)
 {
-    return a.dot(b);
+    const FloatT cons_angle = a.dot(b);
+    return std::min(std::max(cos_angle, static_cast<FloatT>(-1.0)), static_cast<FloatT>(+1.0));
 }
 
 static FloatT angleBetweenNormals(const Normal &a, const Normal &b)
@@ -14,7 +15,8 @@ static FloatT angleBetweenNormals(const Normal &a, const Normal &b)
 
 static FloatT cosAngleBetweenVectors(const Vector3 &a, const Vector3 &b)
 {
-    return a.dot(b) / (a.norm() * b.norm());
+    const FloatT cos_angle = a.dot(b) / (a.norm() * b.norm());
+    return std::min(std::max(cos_angle, static_cast<FloatT>(-1.0)), static_cast<FloatT>(+1.0));
 }
 
 static FloatT angleBetweenVectors(const Vector3 &a, const Vector3 &b)
