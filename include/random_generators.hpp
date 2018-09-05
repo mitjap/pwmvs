@@ -65,7 +65,7 @@ struct RandomNormalGenerator {
     template <class UniformRandomNumberGenerator>
     Normal perturb(const Normal &normal, const Normal &ray, FloatT perturbation, UniformRandomNumberGenerator &urng, int max_iter = 7)
     {
-        const FloatT perturbation_angle = perturbation * deg2rad(max_angle / 4);
+        const FloatT perturbation_angle = perturbation * (max_angle / 4);
         const Normal n = (*this)(normal, std::cos(perturbation_angle), urng);
 
         const FloatT cos_angle = cosAngleBetweenNormals(n, -ray);
