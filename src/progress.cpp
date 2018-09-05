@@ -68,7 +68,7 @@ void ConsoleProgress::increment(int steps)
 {
     AbstractProgress::increment(steps);
 
-    std::cout << "Progress: " << completedSteps() << "/" << totalSteps() << "\n";
+    std::cout << "Progress: " << completedSteps() << "/" << totalSteps() << "\n" << std::endl;
 }
 
 void ConsoleProgress::configure(int total_steps)
