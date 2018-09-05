@@ -170,10 +170,10 @@ protected:
 
             if (options.geometric_consistency_term)
             {
-                for (int h = 1; h < N; ++h)
+                for (int h = 0; h < N; ++h)
                 {
                     // TODO: also consider src's normal at projected pixel
-                    evaluations[h] += options.geometric_consistency_weight * geometric_consistency_calculator(*src, convertToFloat(x), hypotheses[i].depth);
+                    evaluations[h] += options.geometric_consistency_weight * geometric_consistency_calculator(*src, convertToFloat(x), hypotheses[h].depth);
                 }
             }
         }
