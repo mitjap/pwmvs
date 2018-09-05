@@ -39,7 +39,8 @@ int main()
     pwmvs_controller.pwmvs_options.filter_min_num_consistent = 2;
     pwmvs_controller.pwmvs_options.filter_geometric_consistency = true;
 
-    pwmvs_controller.run(geometric, &pwmvs_progress);
+    if (!pwmvs_controller.run(geometric, &pwmvs_progress))
+        return EXIT_FAILURE;
 
     Fusion fusion(workspace);
     fusion.options.min_points = 4;
