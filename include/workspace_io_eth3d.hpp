@@ -96,6 +96,8 @@ static bool readPoints(const std::string &filename, std::map<int, std::map<int, 
     if (!stream.is_open())
         return false;
 
+    std::map<int, std::set<int>> src_view_ids;
+
     std::string line;
     while (std::getline(stream, line))
     {
@@ -137,15 +139,17 @@ static bool readPoints(const std::string &filename, std::map<int, std::map<int, 
 
         for (int image_id : image_ids)
         {
-            ViewData &view = workspace.view_data.at(image_id);
-            view.src_view_ids.insert(image_ids.begin(), image_ids.end());
+            //ViewData &view = workspace.view_data.at(image_id);
+            src_view_ids[image_id].insert(image_ids.begin(), image_ids.end());
         }
     }
 
     for (int image_id = 0; image_id < workspace.view_data.size(); image_id++)
     {
+        src_view_ids[image_id].erase(image_id);
+
         ViewData &view = workspace.view_data.at(image_id);
-        view.src_view_ids.erase(image_id); // remove self from references
+        view.src_view_ids.insert(view.src_view_ids.end(), src_view_ids[image_id].begin(), src_view_ids[image_id].end());
     }
 
     return true;

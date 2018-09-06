@@ -69,7 +69,7 @@ bool Workspace::getMinMaxDepth(int id, FloatT &min, FloatT &max) const
     return !depths.empty();
 }
 
-bool Workspace::getSrcViewIds(int ref_id, std::set<int> &src_view_ids, int max_source_views) const
+bool Workspace::getSrcViewIds(int ref_id, std::vector<int> &src_view_ids) const
 {
     const ViewData &ref = view_data[ref_id];
 
@@ -102,22 +102,21 @@ bool Workspace::getSrcViewIds(int ref_id, std::set<int> &src_view_ids, int max_s
     std::sort(sorted.begin(), sorted.end(), [](const std::pair<int, FloatT> &first, const std::pair<int, FloatT> &second) {
         return first.second > second.second;
     });
-    sorted.resize(std::min(sorted.size(), static_cast<decltype(sorted.size())>(max_source_views)));
 
     for (std::pair<int, FloatT> &image_score : sorted)
-        src_view_ids.insert(image_score.first);
+        src_view_ids.push_back(image_score.first);
 
     return !src_view_ids.empty();
 }
 
-void Workspace::initialize(int max_source_views)
+void Workspace::initialize()
 {
     #pragma omp parallel for
     for (int view_id = 0; view_id < view_data.size(); ++view_id)
     {
         ViewData &view = view_data[view_id];
 
-        getSrcViewIds(view_id, view.src_view_ids, max_source_views);
+        getSrcViewIds(view_id, view.src_view_ids);
         getMinMaxDepth(view_id, view.min_depth, view.max_depth);
     }
 }

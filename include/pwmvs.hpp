@@ -13,6 +13,8 @@ public:
     // There are many options, use struct to pass them
     struct Options
     {
+        int max_sources = 20;
+
         // Random depth initialization
         FloatT min_depth = 0;
         FloatT max_depth = std::numeric_limits<FloatT>::max();
@@ -38,7 +40,6 @@ public:
         // Message propagation (forward, backward)
         FloatT color_similarity_sigma = 0.6;
 
-
         // Filtering
         bool filter_photometric_consistency = true;
         FloatT filter_min_color_similarity = 0.1;
@@ -47,7 +48,6 @@ public:
 
         bool filter_geometric_consistency = false;
         FloatT filter_geometric_consistency_max_error = 1;
-
     };
 
 private:

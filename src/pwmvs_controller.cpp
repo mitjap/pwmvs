@@ -51,8 +51,8 @@ bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
         if (!workspace->getMinMaxDepth(ref_id, min_depth, max_depth))
             continue;
 
-        std::set<int> src_view_ids;
-        if (!workspace->getSrcViewIds(ref_id, src_view_ids, 15))
+        std::vector<int> src_view_ids;
+        if (!workspace->getSrcViewIds(ref_id, src_view_ids))
             continue;
 
         std::cout << "Source views:";
@@ -68,6 +68,9 @@ bool Controller<T>::runInternal(bool geometric, AbstractProgress *progress)
         std::vector<std::shared_ptr<SrcView>> srcs;
         for (int src_id : src_view_ids)
         {
+            if (srcs.size() >= pwmvs_options.max_sources && pwmvs_options.max_sources > 0)
+                break;
+
             const ViewData &src_view = workspace->view_data[src_id];
 
             std::shared_ptr<SrcView> src = createSrcView(ref_view, src_view);

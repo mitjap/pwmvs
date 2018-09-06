@@ -67,9 +67,6 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
     const Normal  n_ref = ref->unprojectNormal(ref_item.x);
     const auto &c_ref = ref->color(ref_item.x);
 
-//    std::set<std::pair<int, std::pair<int, int>>> used;
-//    used.insert(std::make_pair(ref_item.image_id, std::make_pair(ref_item.x(0), ref_item.x(1))));
-
     std::queue<QueueItem> queue;
     pupulateQueue(queue, ref_item, X_ref);
 
@@ -89,9 +86,6 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
 
         std::shared_ptr<SrcView> &src = views[src_item.image_id];
         if (!src) continue;
-
-//        if (!used.insert(std::make_pair(src_item.image_id, std::make_pair(src_item.x(0), src_item.x(1)))).second)
-//            continue;
 
         if (!src->isValid(src_item.x))
             continue;
@@ -156,11 +150,7 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
 
 void Fusion::pupulateQueue(std::queue<Fusion::QueueItem> &queue, const Fusion::QueueItem &item, const Vector3 &X)
 {
-    std::set<int> src_view_ids;
-    if (!workspace->getSrcViewIds(item.image_id, src_view_ids, 20))
-        return;
-
-    for (int src_view_id : src_view_ids)
+    for (int src_view_id : workspace->view_data[item.image_id].src_view_ids)
     {
         const View &view = *views[src_view_id];
         const Vector2i x = convertToInt(view.project(X));

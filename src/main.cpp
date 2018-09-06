@@ -24,7 +24,7 @@ int main()
     InitializeWorkspaceOpenMVG(sfm_data_path, root_path, *workspace, 0.5);
 
     workspace->work_path = workspace->root_path + "/pwmvs";
-    workspace->initialize(20);
+    workspace->initialize();
 
     bool geometric = false;
     ConsoleProgress pwmvs_progress;
