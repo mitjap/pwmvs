@@ -47,6 +47,8 @@ int main()
     fusion.options.max_reprojection_error = 1.3;
     fusion.run(geometric, &pwmvs_progress);
 
+    std::cout << "Exporting points" << std::endl;
+    ExportPoints(fusion.points, fusion.normals, fusion.colors, stlplus::create_filespec(workspace->work_path, "fused", "ply"));
 
     return EXIT_SUCCESS;
 }

@@ -12,35 +12,42 @@ Fusion::Fusion(const std::shared_ptr<Workspace> &workspace)
 void Fusion::run(bool geometric, AbstractProgress *progress)
 {
     max_reprojection_error_sq = options.max_reprojection_error * options.max_reprojection_error;
+    cos_max_angle_error = std::cos(options.max_angle_error);
 
     initializeViews(geometric);
 
     progress->configure(views.size());
 
+
+    // sort view by number of neghbours
+    std::vector<int> prioritized_view_ids;
     for (int i = 0; i < views.size(); i++)
+        prioritized_view_ids.push_back(i);
+    std::sort(prioritized_view_ids.begin(), prioritized_view_ids.end(), [this](int a_id, int b_id) {
+        return this->workspace->view_data[a_id].src_view_ids.size() > this->workspace->view_data[b_id].src_view_ids.size();
+    });
+
+
+    for (int src_id : prioritized_view_ids)
     {
         ProgressIncrementor inc(progress);
+        std::shared_ptr<SrcView> &view = views[src_id];
 
-        SrcView &view = *views[i];
-
-        if (view.depth.size() == 0 || view.normal.size() == 0 || view.color.size() == 0)
+        if (!view || view->depth.size() == 0 || view->normal.size() == 0 || view->color.size() == 0)
             continue;
 
         QueueItem item;
-        item.image_id = i;
+        item.image_id = src_id;
 
-        for (int row = 0; row < view.height; row++)
+        for (int row = 0; row < view->height; row++)
         {
-            for (int col = 0; col < view.width; col++)
+            for (int col = 0; col < view->width; col++)
             {
                 item.x << col, row;
                 fuse(item);
             }
         }
     }
-
-    std::cout << "Exporting points" << std::endl;
-    ExportPoints(points, normals, colors, stlplus::create_filespec(workspace->work_path, "fused", "ply"));
 }
 
 void Fusion::initializeViews(bool geometric)
@@ -60,7 +67,7 @@ void Fusion::initializeViews(bool geometric)
 void Fusion::fuse(const Fusion::QueueItem &ref_item)
 {
     std::shared_ptr<SrcView> &ref = views[ref_item.image_id];
-    if (!ref || !ref->isValid(ref_item.x)) return;
+    if (!ref->isValid(ref_item.x)) return;
 
     Vector2 x = convertToFloat(ref_item.x);
     const Vector3 X_ref = ref->unproject(ref_item.x);
@@ -119,7 +126,7 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
 
         // Invalidate pixel
         src->depth(src_item.x)  = 0;
-        src->normal(src_item.x) = Normal::Zero();
+        //src->normal(src_item.x) = Normal::Zero();
     }
 
     if (accumulated_x.size() < options.min_points)
@@ -152,12 +159,15 @@ void Fusion::pupulateQueue(std::queue<Fusion::QueueItem> &queue, const Fusion::Q
 {
     for (int src_view_id : workspace->view_data[item.image_id].src_view_ids)
     {
-        const View &view = *views[src_view_id];
-        const Vector2i x = convertToInt(view.project(X));
-        if (!view.isVisible(x))
+        const std::shared_ptr<SrcView> &view = views[src_view_id];
+        if (!view)
             continue;
 
-        queue.emplace(src_view_id, x, item.depth + 1);
+        const Vector2i x = convertToInt(view->project(X));
+        if (!view->isVisible(x))
+            continue;
+
+        queue.emplace(src_view_id, x, item.recursion_depth + 1);
     }
 }
 
@@ -168,7 +178,7 @@ bool Fusion::checkDepth(const FloatT projected_depth, const FloatT src_depth) co
 
 bool Fusion::checkNormal(const Normal &ref_normal, const Normal &src_normal) const
 {
-    return angleBetweenNormals(ref_normal, src_normal) < options.max_angle_error;
+    return cosAngleBetweenNormals(ref_normal, src_normal) >= cos_max_angle_error;
 }
 
 bool Fusion::checkReprojectionError(const Vector2 &ref_x, const Vector2 &ref_x_) const

@@ -12,15 +12,15 @@ class Fusion
     struct QueueItem
     {
         QueueItem()
-            : depth(0)
+            : recursion_depth(0)
         {
 
         }
 
-        QueueItem(int image_id, const Vector2i &x, int depth)
+        QueueItem(int image_id, const Vector2i &x, int recursion_depth)
             : image_id(image_id)
             , x(x)
-            , depth(depth)
+            , recursion_depth(recursion_depth)
         {
 
         }
@@ -28,7 +28,7 @@ class Fusion
         int image_id;
         Vector2i x;
 
-        int depth;
+        int recursion_depth;
     };
 
 public:
@@ -63,6 +63,7 @@ public:
     std::vector<Normal> normals;
 
     FloatT max_reprojection_error_sq;
+    FloatT cos_max_angle_error;
 
     std::vector<unsigned char> accumulated_r, accumulated_g, accumulated_b;
     std::vector<FloatT> accumulated_x,  accumulated_y,  accumulated_z;
