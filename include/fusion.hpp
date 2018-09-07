@@ -34,6 +34,8 @@ class Fusion
 public:
     struct Options
     {
+        int max_sources = 20;
+
         FloatT max_depth_error = 0.02;
         FloatT max_angle_error = deg2rad(15);
         FloatT max_reprojection_error = 1.5;

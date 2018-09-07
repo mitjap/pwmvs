@@ -157,8 +157,9 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
 
 void Fusion::pupulateQueue(std::queue<Fusion::QueueItem> &queue, const Fusion::QueueItem &item, const Vector3 &X)
 {
-    for (int src_view_id : workspace->view_data[item.image_id].src_view_ids)
+    for (int i = 0; i < std::min(workspace->view_data[item.image_id].src_view_ids.size(), (size_t)options.max_sources); ++i)
     {
+        int src_view_id = workspace->view_data[item.image_id].src_view_ids.at(i);
         const std::shared_ptr<SrcView> &view = views[src_view_id];
         if (!view)
             continue;
