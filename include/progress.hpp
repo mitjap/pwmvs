@@ -11,6 +11,7 @@ public:
 
     virtual void increment(int steps = 1);
     virtual void configure(int total_steps);
+    virtual void check() {}
 
     int completedSteps() const;
     int totalSteps() const;

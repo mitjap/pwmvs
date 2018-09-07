@@ -50,7 +50,7 @@ ProgressIncrementor::ProgressIncrementor(AbstractProgress *progress, int steps)
     : progress(progress)
     , steps(steps)
 {
-    // nothing to do
+    if (progress) progress->check();
 }
 
 ProgressIncrementor::~ProgressIncrementor()
