@@ -157,10 +157,7 @@ static std::shared_ptr<openMVG::cameras::Pinhole_Intrinsic> ConvertToPinholeIntr
 static void ConvertToPinholeScene(const openMVG::sfm::SfM_Data &in, const std::string &out_root_path, openMVG::sfm::SfM_Data &out, FloatT level = 3, bool undistort = true)
 {
     if (undistort)
-    {
-        stlplus::folder_delete(out_root_path, true);
         stlplus::folder_create(out_root_path);
-    }
 
     out.s_root_path = out_root_path;
 
