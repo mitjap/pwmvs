@@ -27,7 +27,6 @@ void Fusion::run(bool geometric, AbstractProgress *progress)
         return this->workspace->view_data[a_id].src_view_ids.size() > this->workspace->view_data[b_id].src_view_ids.size();
     });
 
-
     for (int src_id : prioritized_view_ids)
     {
         ProgressIncrementor inc(progress);
@@ -62,6 +61,15 @@ void Fusion::initializeViews(bool geometric)
         views.push_back(src);
         view_id++;
     }
+}
+
+template <class T>
+T median(std::vector<T> &data)
+{
+    size_t id = data.size() / 2;
+    std::nth_element(data.begin(), data.begin() + id, data.end());
+
+    return data.at(id);
 }
 
 void Fusion::fuse(const Fusion::QueueItem &ref_item)
@@ -132,21 +140,9 @@ void Fusion::fuse(const Fusion::QueueItem &ref_item)
     if (accumulated_x.size() < options.min_points)
         return;
 
-    std::sort(accumulated_r.begin(), accumulated_r.end());
-    std::sort(accumulated_g.begin(), accumulated_g.end());
-    std::sort(accumulated_b.begin(), accumulated_b.end());
-    std::sort(accumulated_x.begin(), accumulated_x.end());
-    std::sort(accumulated_y.begin(), accumulated_y.end());
-    std::sort(accumulated_z.begin(), accumulated_z.end());
-    std::sort(accumulated_nx.begin(), accumulated_nx.end());
-    std::sort(accumulated_ny.begin(), accumulated_ny.end());
-    std::sort(accumulated_nz.begin(), accumulated_nz.end());
-
-    int idx = accumulated_x.size() / 2;
-
-    Vector3 X; X << accumulated_x[idx], accumulated_y[idx], accumulated_z[idx];
-    Normal n; n << accumulated_nx[idx], accumulated_ny[idx], accumulated_nz[idx];
-    openMVG::image::RGBColor c; c << accumulated_r[idx], accumulated_g[idx], accumulated_b[idx];
+    Vector3 X; X << median(accumulated_x), median(accumulated_y), median(accumulated_z);
+    Normal n; n << median(accumulated_nx), median(accumulated_ny), median(accumulated_nz);
+    openMVG::image::RGBColor c; c << median(accumulated_r), median(accumulated_g), median(accumulated_b);
 
     n.normalize();
 
