@@ -5,6 +5,12 @@ find_package(OpenMVG REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)
 
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
 add_library(pwmvs
     src/fusion.cpp
     src/pwmvs.cpp
@@ -27,10 +33,7 @@ target_link_libraries(pwmvs
         OpenMVG::openMVG_sfm
         OpenMVG::openMVG_image
         OpenMVG::openMVG_features
-        Eigen3::Eigen
-    PRIVATE
-        OpenMP::OpenMP_CXX
-)
+        Eigen3::Eigen)
 target_compile_features(pwmvs
     PUBLIC
         cxx_generic_lambdas
