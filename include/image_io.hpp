@@ -140,7 +140,7 @@ static void TransformImage(
     {
         for (int col = 0; col < image_out.Width(); ++col)
         {
-            const Vector2 x = convertToFloat(Vector2i(col, row))
+            const Vector2 x = convertToFloat(Vector2i(col, row));
             const Vector2 x_ = cam_in->cam2ima(cam_in->add_disto(cam_out->remove_disto(cam_out->ima2cam(x.cast<double>())))).cast<FloatT>();
 
             // pick pixel if it is in the image domain
